@@ -3,160 +3,124 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- SEO -->
-  <title>Pszczyńskie Centrum Treningu Rehabilitacyjnego</title>
-  <meta name="description" content="Profesjonalna rehabilitacja, trening motoryczny i masaż w Pszczynie. Umów wizytę już dziś.">
-
-  <!-- Open Graph -->
-  <meta property="og:title" content="Centrum Treningu Rehabilitacyjnego Pszczyna">
-  <meta property="og:description" content="Zadbaj o zdrowie i sprawność z naszym zespołem specjalistów.">
-  <meta property="og:type" content="website">
-
-  <!-- Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-
-  <!-- CSS -->
+  <title>GOL-STORE — Sklep piłkarski | Buty, odzież, sprzęt</title>
+  <meta name="description" content="Demonstracyjny sklep piłkarski: korki, halówki, rękawice bramkarskie, piłki i akcesoria. Projekt edukacyjny.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23ff5a00'/%3E%3Ctext x='50' y='72' font-size='62' font-weight='bold' font-style='italic' text-anchor='middle' fill='white' font-family='Arial'%3EG%3C/text%3E%3C/svg%3E">
   <link rel="stylesheet" href="css/style.css">
-
-  <!-- JS -->
-  <script defer src="js/script.js"></script>
 </head>
-
 <body>
+  <div id="site-header"></div>
 
-<!-- ================= HEADER ================= -->
-<header class="header">
-  <div class="container nav">
+  <main>
+    <section class="hero" id="hero" aria-label="Promocje"></section>
 
-    <div class="logo">PCTR</div>
+    <section class="stats-strip" aria-label="Sklep w liczbach">
+      <div class="container" id="statsStrip"></div>
+    </section>
 
-    <nav class="nav-links">
-      <a href="index.html">Start</a>
-      <a href="oferta.html">Oferta</a>
-      <a href="cennik.html">Cennik</a>
-      <a href="przed-wizyta.html">Pierwsza wizyta</a>
-      <a href="galeria.html">Galeria</a>
-      <a href="blog.html">Blog</a>
-      <a href="kontakt.html">Kontakt</a>
-    </nav>
+    <section class="section">
+      <div class="container">
+        <div class="section-head"><h2>Kategorie</h2></div>
+        <div class="cat-tiles" id="catTiles"></div>
+      </div>
+    </section>
 
-    <!-- CTA -->
-    <a href="kontakt.html" class="btn-primary desktop-cta">Umów wizytę</a>
+    <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <h2>Nowości</h2>
+          <a class="section-link" href="kategoria.html?sort=popular">Zobacz wszystkie</a>
+        </div>
+        <div class="carousel" id="newProducts"></div>
+      </div>
+    </section>
 
-    <!-- Mobile -->
-    <button class="menu-toggle">☰</button>
-  </div>
+    <section class="section">
+      <div class="container">
+        <div class="promo-grid">
+          <div class="promo-banner promo-gk">
+            <h3>Strefa bramkarza</h3>
+            <p>Rękawice meczowe i treningowe topowych marek — od juniora do profesjonalisty.</p>
+            <a class="btn btn-primary btn-sm" href="kategoria.html?cat=bramkarskie">Sprawdź rękawice</a>
+          </div>
+          <div class="promo-banner promo-team">
+            <h3>Wyposaż całą drużynę</h3>
+            <p>Koszulki, spodenki i getry drużynowe w pełnej rozmiarówce — idealne pod nadruki.</p>
+            <a class="btn btn-primary btn-sm" href="kategoria.html?cat=odziez">Zobacz odzież</a>
+          </div>
+        </div>
+      </div>
+    </section>
 
-  <!-- Social -->
-  <div class="social-bar">
-    <a href="#">Facebook</a>
-    <a href="#">Instagram</a>
-  </div>
-</header>
+    <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <h2>Bestsellery</h2>
+          <a class="section-link" href="kategoria.html?sort=popular">Zobacz wszystkie</a>
+        </div>
+        <div class="carousel" id="bestsellers"></div>
+      </div>
+    </section>
 
-<!-- ================= HERO ================= -->
-<section class="hero">
-  <div class="hero-overlay"></div>
+    <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <h2>Wyprzedaż do -45%</h2>
+          <a class="section-link" href="kategoria.html?cat=wyprzedaz">Zobacz wszystkie</a>
+        </div>
+        <div class="carousel" id="saleProducts"></div>
+      </div>
+    </section>
 
-  <div class="hero-content container">
-    <h1>Wracaj do sprawności szybciej</h1>
-    <p>Rehabilitacja • Trening motoryczny • Masaż</p>
-    <a href="kontakt.html" class="btn-primary">Umów wizytę</a>
-  </div>
-</section>
+    <section class="section">
+      <div class="container">
+        <div class="section-head"><h2>Popularne marki</h2></div>
+        <div class="brand-strip" id="brandStrip"></div>
+      </div>
+    </section>
 
-<!-- ================= CTA INFO ================= -->
-<section class="section container center">
-  <h2>Pierwsza wizyta?</h2>
-  <p>Nie wiesz czego się spodziewać? Sprawdź jak wygląda pierwsze spotkanie.</p>
-  <a href="przed-wizytą.html" class="btn-secondary">Zobacz szczegóły</a>
-</section>
+    <section class="section" id="recentSection" hidden>
+      <div class="container">
+        <div class="section-head"><h2>Ostatnio oglądane</h2></div>
+        <div class="carousel" id="recentCarousel"></div>
+      </div>
+    </section>
 
-<!-- ================= OFERTA ================= -->
-<section class="section container">
-  <h2 class="section-title">Nasza oferta</h2>
+    <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <h2>Strefa wiedzy</h2>
+          <a class="section-link" href="blog.html">Wszystkie artykuły</a>
+        </div>
+        <div class="blog-grid">
+          <a class="blog-card" href="blog.html#art-korki">
+            <span class="blog-tag">Poradnik</span>
+            <h3>Jak dobrać korki do nawierzchni?</h3>
+            <p>FG, AG, TF czy IC — wyjaśniamy oznaczenia podeszew i podpowiadamy, w czym grać na murawie, orliku i hali.</p>
+            <span class="blog-more">Czytaj dalej →</span>
+          </a>
+          <a class="blog-card" href="blog.html#art-rekawice">
+            <span class="blog-tag">Bramkarze</span>
+            <h3>Pielęgnacja rękawic bramkarskich</h3>
+            <p>Lateks lubi wilgoć, ale nienawidzi pralki. Pięć zasad, dzięki którym rękawice posłużą Ci dwa razy dłużej.</p>
+            <span class="blog-more">Czytaj dalej →</span>
+          </a>
+          <a class="blog-card" href="blog.html#art-rozgrzewka">
+            <span class="blog-tag">Trening</span>
+            <h3>Rozgrzewka przed meczem — 5 ćwiczeń</h3>
+            <p>Kompletny, 15-minutowy schemat rozgrzewki, który zmniejsza ryzyko kontuzji i przygotowuje do pierwszego sprintu.</p>
+            <span class="blog-more">Czytaj dalej →</span>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
 
-  <div class="cards">
-    <div class="card">
-      <div class="icon">🏃</div>
-      <h3>Trening motoryczny</h3>
-      <p>Poprawa siły, mobilności i koordynacji.</p>
-    </div>
+  <div id="site-footer"></div>
 
-    <div class="card">
-      <div class="icon">🦴</div>
-      <h3>Rehabilitacja</h3>
-      <p>Powrót do zdrowia po urazach i operacjach.</p>
-    </div>
-
-    <div class="card">
-      <div class="icon">💆</div>
-      <h3>Masaż</h3>
-      <p>Regeneracja i redukcja napięcia mięśniowego.</p>
-    </div>
-  </div>
-</section>
-
-<!-- ================= ZESPÓŁ ================= -->
-<section class="section alt">
-  <div class="container">
-    <h2 class="section-title">Nasz zespół</h2>
-    <p class="center">
-      Doświadczeni fizjoterapeuci i trenerzy, którzy pracują z pasją i zaangażowaniem.
-    </p>
-  </div>
-</section>
-
-<!-- ================= OPINIE ================= -->
-<section class="section container">
-  <h2 class="section-title">Opinie klientów</h2>
-
-  <div class="testimonials">
-    <div class="testimonial">
-      <p>"Profesjonalne podejście i świetne efekty!"</p>
-      <span>— Anna K.</span>
-    </div>
-
-    <div class="testimonial">
-      <p>"Polecam każdemu po kontuzji."</p>
-      <span>— Michał P.</span>
-    </div>
-  </div>
-</section>
-
-<!-- ================= CTA ================= -->
-<section class="cta">
-  <h2>Zadbaj o swoje zdrowie już dziś</h2>
-  <a href="kontakt.html" class="btn-primary">Umów wizytę</a>
-</section>
-
-<!-- ================= FOOTER ================= -->
-<footer class="footer">
-  <div class="container footer-content">
-
-    <div>
-      <h3>PCTR</h3>
-      <p>Pszczyna</p>
-    </div>
-
-    <div>
-      <a href="index.html">Start</a>
-      <a href="oferta.html">Oferta</a>
-      <a href="cennik.html">Cennik</a>
-      <a href="przed-wizytą.html">Pierwsza wizyta</a>
-      <a href="kontakt.html">Kontakt</a>
-    </div>
-
-    <div>
-      <a href="#">Facebook</a>
-      <a href="#">Instagram</a>
-    </div>
-
-  </div>
-
-  <p class="copyright">© 2026 PCTR</p>
-</footer>
-
+  <script src="js/data.js"></script>
+  <script src="js/images.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/home.js"></script>
 </body>
 </html>

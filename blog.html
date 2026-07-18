@@ -3,107 +3,92 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- SEO -->
-  <title>Blog | PCTR</title>
-  <meta name="description" content="Porady dotyczące rehabilitacji, treningu i zdrowia.">
-
-  <!-- OG -->
-  <meta property="og:title" content="Blog - PCTR">
-  <meta property="og:description" content="Artykuły o zdrowiu i sprawności.">
-
+  <title>Strefa wiedzy | GOL-STORE</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23ff5a00'/%3E%3Ctext x='50' y='72' font-size='62' font-weight='bold' font-style='italic' text-anchor='middle' fill='white' font-family='Arial'%3EG%3C/text%3E%3C/svg%3E">
   <link rel="stylesheet" href="css/style.css">
-  <script defer src="js/script.js"></script>
 </head>
-
 <body>
+  <div id="site-header"></div>
 
-<!-- HEADER -->
-<header class="header">
-  <div class="container nav">
+  <main class="container">
+    <div class="page-title">
+      <h1>Strefa wiedzy</h1>
+      <p>Poradniki i wskazówki dla piłkarzy — od doboru sprzętu po trening.</p>
+    </div>
 
-    <div class="logo">PCTR</div>
+    <div class="blog-grid">
+      <a class="blog-card" href="#art-korki">
+        <span class="blog-tag">Poradnik</span>
+        <h3>Jak dobrać korki do nawierzchni?</h3>
+        <p>FG, AG, TF czy IC — wyjaśniamy oznaczenia podeszew i podpowiadamy, w czym grać na murawie, orliku i hali.</p>
+        <span class="blog-more">Czytaj dalej →</span>
+      </a>
+      <a class="blog-card" href="#art-rekawice">
+        <span class="blog-tag">Bramkarze</span>
+        <h3>Pielęgnacja rękawic bramkarskich</h3>
+        <p>Lateks lubi wilgoć, ale nienawidzi pralki. Pięć zasad, dzięki którym rękawice posłużą Ci dwa razy dłużej.</p>
+        <span class="blog-more">Czytaj dalej →</span>
+      </a>
+      <a class="blog-card" href="#art-rozgrzewka">
+        <span class="blog-tag">Trening</span>
+        <h3>Rozgrzewka przed meczem — 5 ćwiczeń</h3>
+        <p>Kompletny, 15-minutowy schemat rozgrzewki, który zmniejsza ryzyko kontuzji i przygotowuje do pierwszego sprintu.</p>
+        <span class="blog-more">Czytaj dalej →</span>
+      </a>
+    </div>
 
-    <nav class="nav-links">
-      <a href="index.html">Start</a>
-      <a href="oferta.html">Oferta</a>
-      <a href="cennik.html">Cennik</a>
-      <a href="przed-wizyta.html">Pierwsza wizyta</a>
-      <a href="galeria.html">Galeria</a>
-      <a href="blog.html">Blog</a>
-      <a href="kontakt.html">Kontakt</a>
-    </nav>
-
-    <a href="kontakt.html" class="btn-primary desktop-cta">Umów wizytę</a>
-    <button class="menu-toggle">☰</button>
-  </div>
-</header>
-
-<!-- HERO -->
-<section class="subhero">
-  <div class="container">
-    <h1>Blog</h1>
-    <p>Porady i wiedza od specjalistów</p>
-  </div>
-</section>
-
-<!-- BLOG LIST -->
-<section class="section container">
-
-  <div class="blog-grid">
-
-    <article class="blog-card">
-      <img src="https://picsum.photos/400/250?1" loading="lazy">
-      <div class="blog-content">
-        <span class="date">24.03.2026</span>
-        <h3>Jak wrócić do formy po kontuzji?</h3>
-        <p>Sprawdź najważniejsze zasady skutecznej rehabilitacji...</p>
-        <a href="post.html" class="btn-secondary">Czytaj więcej</a>
-      </div>
+    <article class="article" id="art-korki">
+      <span class="blog-tag">Poradnik</span>
+      <h2>Jak dobrać korki do nawierzchni?</h2>
+      <p>Skrót na podeszwie buta mówi wszystko o tym, gdzie będzie się najlepiej sprawdzał.
+      <b>FG (firm ground)</b> to klasyczne korki na suchą, naturalną murawę — dłuższe, rzadziej
+      rozmieszczone kołki dobrze zakotwiczają stopę w trawie. <b>AG (artificial grass)</b> ma
+      więcej krótszych kołków, które nie wbijają się zbyt głęboko w sztuczną trawę nowej
+      generacji — granie w FG na orliku przyspiesza zużycie podeszwy i obciąża kolana.</p>
+      <p><b>TF (turf)</b>, czyli popularne turfy, mają kilkadziesiąt drobnych gumowych wypustek.
+      To najlepszy wybór na starsze, twarde boiska ze sztuczną trawą i przetarty orlik.
+      <b>IC (indoor court)</b> to płaska, niebrudząca podeszwa na halę i parkiet. Jeżeli grasz
+      na różnych nawierzchniach, najbardziej uniwersalnym kompromisem jest hybryda FG/AG,
+      a do amatorskiej gry rekreacyjnej — turfy.</p>
+      <p>Pamiętaj też o dopasowaniu: między najdłuższym palcem a noskiem buta powinno zostać
+      około 0,5 cm luzu. Sprawdź naszą tabelę rozmiarów na karcie każdego produktu.</p>
     </article>
 
-    <article class="blog-card">
-      <img src="https://picsum.photos/400/250?2" loading="lazy">
-      <div class="blog-content">
-        <span class="date">20.03.2026</span>
-        <h3>5 błędów w treningu</h3>
-        <p>Unikaj tych błędów, aby nie doprowadzić do kontuzji...</p>
-        <a href="post.html" class="btn-secondary">Czytaj więcej</a>
-      </div>
+    <article class="article" id="art-rekawice">
+      <span class="blog-tag">Bramkarze</span>
+      <h2>Pielęgnacja rękawic bramkarskich</h2>
+      <p>Lateks chwytny działa najlepiej lekko wilgotny — dlatego przed meczem warto zwilżyć
+      wewnętrzną stronę rękawic odrobiną wody. Po meczu obowiązuje jednak żelazna zasada:
+      <b>nigdy nie susz rękawic na kaloryferze ani w pełnym słońcu</b>. Wysoka temperatura
+      wysusza lateks, który zaczyna kruszyć się i pękać.</p>
+      <p>Rękawice pierz ręcznie, w letniej wodzie (maks. 30°C), bez detergentów albo ze
+      specjalnym środkiem do lateksu. Nie wykręcaj ich — nadmiar wody delikatnie wyciśnij
+      w ręczniku i zostaw do wyschnięcia w przewiewnym miejscu, z dala od źródeł ciepła.
+      Przechowuj je w torbie z siatką, nigdy sklejone dłonią do dłoni.</p>
+      <p>Nawet najlepiej pielęgnowany lateks meczowy wytrzymuje zwykle jeden sezon regularnej
+      gry — dlatego warto mieć osobną, tańszą parę na treningi.</p>
     </article>
 
-  </div>
+    <article class="article" id="art-rozgrzewka">
+      <span class="blog-tag">Trening</span>
+      <h2>Rozgrzewka przed meczem — 5 ćwiczeń</h2>
+      <p>Dobra rozgrzewka podnosi temperaturę mięśni i przygotowuje układ nerwowy do szybkich
+      zmian kierunku. Oto sprawdzony schemat na 15 minut:</p>
+      <p><b>1. Trucht z przeplatanką (3 min)</b> — swobodny bieg z krążeniami ramion i truchtem
+      bokiem. <b>2. Dynamiczne rozciąganie (4 min)</b> — wymachy nóg, wykroki z rotacją tułowia,
+      skip A i C. <b>3. Praca z piłką (3 min)</b> — prowadzenie piłki po slalomie, podania
+      w parach po ziemi i z powietrza. <b>4. Przyspieszenia (3 min)</b> — 4–6 progresywnych
+      sprintów na 20–30 metrów, z naciskiem na technikę pierwszych kroków. <b>5. Akcenty
+      meczowe (2 min)</b> — krótkie starcia jeden na jeden i strzały na bramkę.</p>
+      <p>Między rozgrzewką a pierwszym gwizdkiem nie powinno minąć więcej niż 10 minut —
+      po dłuższej przerwie mięśnie zaczynają stygnąć i efekt przepada.</p>
+    </article>
+  </main>
 
-</section>
+  <div id="site-footer"></div>
 
-<!-- CTA -->
-<section class="cta">
-  <h2>Masz pytania? Skontaktuj się z nami</h2>
-  <a href="kontakt.html" class="btn-primary">Kontakt</a>
-</section>
-
-<!-- FOOTER -->
-<footer class="footer">
-  <div class="container footer-content">
-    <div>
-      <h3>PCTR</h3>
-      <p>Pszczyna</p>
-    </div>
-
-    <div>
-      <a href="index.html">Start</a>
-      <a href="oferta.html">Oferta</a>
-      <a href="cennik.html">Cennik</a>
-      <a href="przed-wizyta.html">Pierwsza wizyta</a>
-      <a href="kontakt.html">Kontakt</a>
-    </div>
-
-    <div>
-      <a href="#">Facebook</a>
-      <a href="#">Instagram</a>
-    </div>
-  </div>
-</footer>
-
+  <script src="js/data.js"></script>
+  <script src="js/images.js"></script>
+  <script src="js/common.js"></script>
 </body>
 </html>
