@@ -60,16 +60,52 @@ function persLabel(i) {
   return i.pers ? `Nadruk: ${i.pers.name || "—"} ${i.pers.number || ""}`.trim() : "";
 }
 
-function addToCart(id, size, qty, pers) {
+function addToCart(id, size, qty, pers, sourceEl) {
   const cart = getCart();
   const item = { id, size, qty: qty || 1, pers: pers || null };
   const found = cart.find((i) => lineKey(i) === lineKey(item));
   if (found) found.qty += item.qty;
   else cart.push(item);
-  setCart(cart);
   const p = getProduct(id);
-  toast(`Dodano do koszyka: ${p ? p.name : ""} (rozm. ${size})`);
-  openCartDrawer();
+  const finish = () => {
+    setCart(cart);
+    pulseCartBadge();
+    toast(`Dodano do koszyka: ${p ? p.name : ""} (rozm. ${size})`);
+    openCartDrawer();
+  };
+  if (sourceEl && p) flyToCart(p, sourceEl, finish);
+  else finish();
+}
+
+/* animacja: miniatura produktu leci do ikony koszyka */
+function flyToCart(p, sourceEl, done) {
+  const cartBtn = qs("#cartBtn");
+  if (!cartBtn || matchMedia("(prefers-reduced-motion: reduce)").matches) { done(); return; }
+  const from = sourceEl.getBoundingClientRect();
+  const to = cartBtn.getBoundingClientRect();
+  const fly = document.createElement("div");
+  fly.className = "fly-img";
+  fly.innerHTML = productSVG(p);
+  Object.assign(fly.style, {
+    left: from.left + from.width / 2 - 45 + "px",
+    top: from.top + from.height / 2 - 45 + "px"
+  });
+  document.body.appendChild(fly);
+  requestAnimationFrame(() => {
+    fly.style.transform =
+      `translate(${to.left + to.width / 2 - (from.left + from.width / 2)}px,` +
+      `${to.top + to.height / 2 - (from.top + from.height / 2)}px) scale(.12) rotate(20deg)`;
+    fly.style.opacity = "0";
+  });
+  setTimeout(() => { fly.remove(); done(); }, 520);
+}
+
+function pulseCartBadge() {
+  const badge = qs("#cartCountBadge");
+  if (!badge) return;
+  badge.classList.remove("pulse");
+  void badge.offsetWidth; /* restart animacji */
+  badge.classList.add("pulse");
 }
 
 function removeFromCart(key) {
@@ -473,7 +509,8 @@ function productCard(p) {
     ${p.badge ? `<span class="p-badge ${/^-/.test(p.badge) ? "p-badge-sale" : ""}">${p.badge}</span>` : ""}
     <button class="wish-btn ${inWish ? "active" : ""}" data-id="${p.id}" aria-label="Dodaj do ulubionych">${ICONS.heart}</button>
     <a href="produkt.html?id=${p.id}" class="p-img">
-      ${productSVG(p)}
+      <span class="p-img-main">${productSVG(p)}</span>
+      <span class="p-img-alt" aria-hidden="true">${productSVGAlt(p)}</span>
       <span class="quick-add" aria-hidden="true">
         <span class="qa-label">${ICONS.cart} Szybki zakup — wybierz rozmiar:</span>
         <span class="qa-sizes">
@@ -508,9 +545,81 @@ function bindWishButtons(scope) {
     b.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      addToCart(Number(b.dataset.id), b.dataset.size, 1);
+      const card = b.closest(".product-card");
+      addToCart(Number(b.dataset.id), b.dataset.size, 1, null, card ? qs(".p-img", card) : null);
       if (typeof window.onCartChanged === "function") window.onCartChanged();
     });
+  });
+}
+
+/* ---------- animacje wejścia przy scrollu ---------- */
+let revealObserver = null;
+
+function initReveal() {
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    qsa(".reveal").forEach((el) => el.classList.add("in"));
+    return;
+  }
+  revealObserver = revealObserver || new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      if (e.isIntersecting) { e.target.classList.add("in"); revealObserver.unobserve(e.target); }
+    });
+  }, { threshold: 0.12 });
+  qsa(".reveal:not(.in)").forEach((el) => revealObserver.observe(el));
+}
+
+/* automatyczne oznaczenie sekcji do animacji wejścia */
+function markReveals() {
+  qsa("main .section, main .promo-banner, .blog-card, .article").forEach((el) => el.classList.add("reveal"));
+  initReveal();
+}
+
+/* ---------- animowane liczniki ---------- */
+function animateCounters(scope) {
+  const els = qsa("[data-count]", scope);
+  if (!els.length) return;
+  const run = (el) => {
+    const target = Number(el.dataset.count);
+    const suffix = el.dataset.suffix || "";
+    const dur = 1200, t0 = performance.now();
+    const tick = (t) => {
+      const k = Math.min(1, (t - t0) / dur);
+      const eased = 1 - Math.pow(1 - k, 3);
+      el.textContent = Math.round(target * eased) + suffix;
+      if (k < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  };
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    els.forEach((el) => { el.textContent = el.dataset.count + (el.dataset.suffix || ""); });
+    return;
+  }
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      if (e.isIntersecting) { run(e.target); obs.unobserve(e.target); }
+    });
+  }, { threshold: 0.4 });
+  els.forEach((el) => obs.observe(el));
+}
+
+/* ---------- płynne przejścia między stronami ---------- */
+function initPageTransitions() {
+  document.body.classList.add("page-enter");
+  requestAnimationFrame(() => requestAnimationFrame(() => document.body.classList.add("page-ready")));
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest("a[href]");
+    if (!a) return;
+    const href = a.getAttribute("href");
+    if (!href || href.startsWith("#") || href.startsWith("http") || href.startsWith("mailto") ||
+        href.startsWith("tel") || a.target === "_blank" || e.metaKey || e.ctrlKey) return;
+    e.preventDefault();
+    document.body.classList.add("page-leave");
+    setTimeout(() => { location.href = href; }, 180);
+  });
+  /* powrót przyciskiem wstecz z bfcache — zdejmij stan wyjścia */
+  window.addEventListener("pageshow", (e) => {
+    if (e.persisted) document.body.classList.remove("page-leave");
   });
 }
 
@@ -518,5 +627,8 @@ function bindWishButtons(scope) {
 document.addEventListener("DOMContentLoaded", () => {
   renderHeader();
   renderFooter();
+  initPageTransitions();
   if (typeof window.pageInit === "function") window.pageInit();
+  markReveals();
+  animateCounters();
 });

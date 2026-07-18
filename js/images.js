@@ -1,20 +1,33 @@
 /* ============================================================
    GOL-STORE — generator grafik produktowych (SVG)
-   Każdy typ produktu ma własny rysunek parametryzowany kolorami.
+   Widok główny + widok alternatywny (podmiana na hover),
+   tła ze sceną świetlną i dynamicznym akcentem.
    ============================================================ */
 
-function svgWrap(inner, bg) {
+function svgWrap(inner, opts) {
+  const o = opts || {};
+  const accent = o.accent || "#e9ebee";
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img">
-    <rect width="400" height="400" fill="${bg || "#f4f4f5"}"/>
+    <defs>
+      <radialGradient id="bgGlow" cx="50%" cy="34%" r="80%">
+        <stop offset="0%" stop-color="#ffffff"/>
+        <stop offset="62%" stop-color="#f5f6f8"/>
+        <stop offset="100%" stop-color="#e9ebef"/>
+      </radialGradient>
+    </defs>
+    <rect width="400" height="400" fill="${o.bg || "url(#bgGlow)"}"/>
+    <path d="M-40 330 L440 190 L440 250 L-40 390 Z" fill="${accent}" opacity=".5"/>
+    <path d="M-40 360 L440 220 L440 238 L-40 408 Z" fill="${accent}" opacity=".35"/>
     ${inner}
   </svg>`;
 }
 
+/* ---------- widoki główne ---------- */
 const SVG_DRAWERS = {
   boot(c) {
     return `
     <g>
-      <ellipse cx="200" cy="330" rx="150" ry="14" fill="rgba(0,0,0,.08)"/>
+      <ellipse cx="200" cy="330" rx="150" ry="14" fill="rgba(10,15,25,.10)"/>
       <path d="M70 265 C75 220 110 205 140 195 C175 183 195 150 205 120 C212 100 228 92 245 98
                C262 104 268 118 266 138 L262 200 C300 215 340 235 342 265 L342 285 L70 285 Z"
             fill="${c.c1}" stroke="#0002" stroke-width="2"/>
@@ -36,13 +49,15 @@ const SVG_DRAWERS = {
         <line x1="184" y1="186" x2="216" y2="178"/>
       </g>
       <path d="M300 226 C320 236 336 250 340 264" stroke="${c.c2}" stroke-width="8" fill="none" stroke-linecap="round"/>
+      <path d="M96 236 C130 214 170 206 210 210" stroke="#ffffff" stroke-width="4" fill="none"
+            stroke-linecap="round" opacity=".35"/>
     </g>`;
   },
 
   shirt(c) {
     return `
     <g>
-      <ellipse cx="200" cy="352" rx="130" ry="10" fill="rgba(0,0,0,.07)"/>
+      <ellipse cx="200" cy="352" rx="130" ry="10" fill="rgba(10,15,25,.09)"/>
       <path d="M140 80 L100 100 L60 170 L110 200 L120 175 L120 340 L280 340 L280 175 L290 200 L340 170 L300 100 L260 80
                C245 102 220 112 200 112 C180 112 155 102 140 80 Z"
             fill="${c.c1}" stroke="#0002" stroke-width="2"/>
@@ -60,7 +75,7 @@ const SVG_DRAWERS = {
   glove(c) {
     return `
     <g>
-      <ellipse cx="200" cy="350" rx="120" ry="10" fill="rgba(0,0,0,.07)"/>
+      <ellipse cx="200" cy="350" rx="120" ry="10" fill="rgba(10,15,25,.09)"/>
       <path d="M150 340 L150 210 C150 200 143 196 132 200 L108 210 C96 214 88 206 92 194 L120 130
                C126 116 138 110 152 110 L156 92 C158 74 172 64 188 64 L232 64 C248 64 260 76 260 92
                L264 190 C266 250 268 300 250 340 Z"
@@ -81,7 +96,7 @@ const SVG_DRAWERS = {
   ball(c) {
     return `
     <g>
-      <ellipse cx="200" cy="345" rx="110" ry="12" fill="rgba(0,0,0,.08)"/>
+      <ellipse cx="200" cy="345" rx="110" ry="12" fill="rgba(10,15,25,.10)"/>
       <circle cx="200" cy="205" r="130" fill="${c.c1}" stroke="#0002" stroke-width="2"/>
       <polygon points="200,140 240,168 225,215 175,215 160,168" fill="${c.c2}"/>
       <polygon points="200,75 232,95 224,130 176,130 168,95" fill="${c.c3}" opacity=".9"/>
@@ -100,7 +115,7 @@ const SVG_DRAWERS = {
   shorts(c) {
     return `
     <g>
-      <ellipse cx="200" cy="345" rx="120" ry="10" fill="rgba(0,0,0,.07)"/>
+      <ellipse cx="200" cy="345" rx="120" ry="10" fill="rgba(10,15,25,.09)"/>
       <path d="M110 90 L290 90 L310 300 L230 312 L200 200 L170 312 L90 300 Z"
             fill="${c.c1}" stroke="#0002" stroke-width="2"/>
       <rect x="110" y="90" width="180" height="26" fill="${c.c2}"/>
@@ -114,7 +129,7 @@ const SVG_DRAWERS = {
   socks(c) {
     return `
     <g>
-      <ellipse cx="205" cy="350" rx="110" ry="10" fill="rgba(0,0,0,.07)"/>
+      <ellipse cx="205" cy="350" rx="110" ry="10" fill="rgba(10,15,25,.09)"/>
       <path d="M150 60 L250 60 L250 220 C250 240 262 252 280 262 C304 274 312 300 298 322
                C284 342 254 348 232 334 L160 290 C152 284 150 276 150 266 Z"
             fill="${c.c1}" stroke="#0002" stroke-width="2"/>
@@ -128,7 +143,7 @@ const SVG_DRAWERS = {
   bag(c) {
     return `
     <g>
-      <ellipse cx="200" cy="340" rx="140" ry="12" fill="rgba(0,0,0,.08)"/>
+      <ellipse cx="200" cy="340" rx="140" ry="12" fill="rgba(10,15,25,.10)"/>
       <rect x="60" y="170" width="280" height="150" rx="28" fill="${c.c1}" stroke="#0002" stroke-width="2"/>
       <path d="M120 170 C120 120 150 96 200 96 C250 96 280 120 280 170" fill="none"
             stroke="${c.c2}" stroke-width="14" stroke-linecap="round"/>
@@ -143,7 +158,7 @@ const SVG_DRAWERS = {
   shin(c) {
     return `
     <g>
-      <ellipse cx="200" cy="345" rx="110" ry="10" fill="rgba(0,0,0,.07)"/>
+      <ellipse cx="200" cy="345" rx="110" ry="10" fill="rgba(10,15,25,.09)"/>
       <path d="M130 80 C170 60 230 60 270 80 C280 130 280 220 255 300 C240 330 160 330 145 300 C120 220 120 130 130 80 Z"
             fill="${c.c1}" stroke="#0002" stroke-width="2"/>
       <path d="M148 96 C180 82 220 82 252 96 C258 136 258 210 240 276 C230 296 170 296 160 276 C142 210 142 136 148 96 Z"
@@ -160,7 +175,7 @@ const SVG_DRAWERS = {
   cone(c) {
     return `
     <g>
-      <ellipse cx="200" cy="345" rx="130" ry="12" fill="rgba(0,0,0,.08)"/>
+      <ellipse cx="200" cy="345" rx="130" ry="12" fill="rgba(10,15,25,.10)"/>
       <path d="M200 70 L280 310 L120 310 Z" fill="${c.c1}" stroke="#0002" stroke-width="2"/>
       <path d="M172 154 L228 154 L242 196 L158 196 Z" fill="#ffffff"/>
       <path d="M148 226 L252 226 L266 268 L134 268 Z" fill="#ffffff"/>
@@ -173,7 +188,7 @@ const SVG_DRAWERS = {
   tracksuit(c) {
     return `
     <g>
-      <ellipse cx="200" cy="352" rx="130" ry="10" fill="rgba(0,0,0,.07)"/>
+      <ellipse cx="200" cy="352" rx="130" ry="10" fill="rgba(10,15,25,.09)"/>
       <path d="M150 70 L120 84 L84 150 L122 172 L130 152 L130 330 L270 330 L270 152 L278 172 L316 150 L280 84 L250 70
                C238 88 218 96 200 96 C182 96 162 88 150 70 Z"
             fill="${c.c1}" stroke="#0002" stroke-width="2"/>
@@ -189,9 +204,97 @@ const SVG_DRAWERS = {
   }
 };
 
+/* ---------- widoki alternatywne (hover) ---------- */
+const SVG_ALT_DRAWERS = {
+  /* but od przodu */
+  boot(c) {
+    return `
+    <g>
+      <ellipse cx="200" cy="332" rx="96" ry="13" fill="rgba(10,15,25,.10)"/>
+      <path d="M130 318 C122 250 128 180 152 130 C164 106 180 94 200 94 C220 94 236 106 248 130
+               C272 180 278 250 270 318 C270 330 258 336 244 336 L156 336 C142 336 130 330 130 318 Z"
+            fill="${c.c1}" stroke="#0002" stroke-width="2"/>
+      <path d="M152 130 C164 106 180 94 200 94 C220 94 236 106 248 130 C252 139 256 150 259 162
+               C222 176 178 176 141 162 C144 150 148 139 152 130 Z" fill="${c.c2}"/>
+      <path d="M172 182 L228 182 M170 206 L230 206 M169 230 L231 230 M170 254 L230 254"
+            stroke="${c.c3}" stroke-width="7" stroke-linecap="round"/>
+      <path d="M172 182 C182 190 218 190 228 182 M170 206 C182 214 218 214 230 206
+               M169 230 C181 238 219 238 231 230" stroke="#0002" stroke-width="2" fill="none"/>
+      <path d="M130 318 L270 318 L270 326 C270 334 258 340 244 340 L156 340 C142 340 130 334 130 326 Z"
+            fill="#181818"/>
+      <g fill="#181818">
+        <rect x="142" y="338" width="14" height="20" rx="4"/>
+        <rect x="193" y="338" width="14" height="20" rx="4"/>
+        <rect x="244" y="338" width="14" height="20" rx="4"/>
+      </g>
+      <circle cx="200" cy="286" r="17" fill="none" stroke="${c.c3}" stroke-width="4"/>
+      <path d="M148 150 C160 128 178 114 200 112" stroke="#ffffff" stroke-width="4" fill="none"
+            stroke-linecap="round" opacity=".4"/>
+    </g>`;
+  },
+
+  /* koszulka od tyłu z nadrukiem */
+  shirt(c) {
+    return `
+    <g>
+      <ellipse cx="200" cy="352" rx="130" ry="10" fill="rgba(10,15,25,.09)"/>
+      <path d="M140 80 L100 100 L60 170 L110 200 L120 175 L120 340 L280 340 L280 175 L290 200 L340 170 L300 100 L260 80
+               C245 96 220 104 200 104 C180 104 155 96 140 80 Z"
+            fill="${c.c1}" stroke="#0002" stroke-width="2"/>
+      <path d="M140 80 C155 96 180 104 200 104 C220 104 245 96 260 80 L248 74 C236 86 218 92 200 92 C182 92 164 86 152 74 Z"
+            fill="${c.c2}"/>
+      <path d="M60 170 L110 200 L120 175 L120 150 L84 128 Z" fill="${c.c2}" opacity=".85"/>
+      <path d="M340 170 L290 200 L280 175 L280 150 L316 128 Z" fill="${c.c2}" opacity=".85"/>
+      <text x="200" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold"
+            font-size="26" letter-spacing="3" fill="${c.c3}">GOL</text>
+      <text x="200" y="268" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold"
+            font-size="110" fill="${c.c3}">10</text>
+      <rect x="120" y="300" width="160" height="14" fill="${c.c2}"/>
+    </g>`;
+  },
+
+  /* rękawica — wnętrze dłoni */
+  glove(c) {
+    return `
+    <g>
+      <ellipse cx="200" cy="350" rx="120" ry="10" fill="rgba(10,15,25,.09)"/>
+      <path d="M148 336 L148 200 C148 190 141 186 130 190 L110 198 C98 202 90 194 94 182 L124 122
+               C130 108 142 102 156 102 L158 90 C160 72 174 62 190 62 L234 62 C250 62 262 74 262 90
+               L266 188 C268 248 268 298 252 336 Z" fill="${c.c2}" stroke="#0002" stroke-width="2"/>
+      <g fill="${c.c1}">
+        <rect x="158" y="62" width="20" height="64" rx="10"/>
+        <rect x="184" y="56" width="20" height="70" rx="10"/>
+        <rect x="210" y="58" width="20" height="68" rx="10"/>
+        <rect x="236" y="64" width="20" height="62" rx="10"/>
+      </g>
+      <path d="M156 140 C186 152 226 152 258 140 L260 240 C226 252 188 252 154 240 Z"
+            fill="${c.c1}" opacity=".95"/>
+      <g stroke="${c.c3}" stroke-width="4" fill="none" opacity=".7">
+        <path d="M164 168 C192 178 222 178 250 168"/>
+        <path d="M162 196 C192 206 222 206 252 196"/>
+        <path d="M160 224 C192 234 222 234 252 224"/>
+      </g>
+      <rect x="148" y="296" width="104" height="22" rx="11" fill="${c.c3}"/>
+      <path d="M104 186 L128 130" stroke="${c.c1}" stroke-width="8" stroke-linecap="round" fill="none"/>
+    </g>`;
+  }
+};
+
 function productSVG(p, bg) {
   const drawer = SVG_DRAWERS[p.type] || SVG_DRAWERS.ball;
-  return svgWrap(drawer(p.img), bg);
+  return svgWrap(drawer(p.img), { bg, accent: p.img.c2 === "#ffffff" ? p.img.c1 : p.img.c2 });
+}
+
+/* widok alternatywny: dedykowany rysunek albo dynamiczne zbliżenie */
+function productSVGAlt(p, bg) {
+  const alt = SVG_ALT_DRAWERS[p.type];
+  const accent = p.img.c2 === "#ffffff" ? p.img.c1 : p.img.c2;
+  if (alt) return svgWrap(alt(p.img), { bg, accent });
+  const drawer = SVG_DRAWERS[p.type] || SVG_DRAWERS.ball;
+  return svgWrap(
+    `<g transform="rotate(-10 200 210) translate(200 210) scale(1.22) translate(-200 -210)">${drawer(p.img)}</g>`,
+    { bg, accent }
+  );
 }
 
 function productImgSrc(p, bg) {

@@ -2,6 +2,7 @@
 
 window.pageInit = function () {
   renderHero();
+  renderStats();
   renderCatTiles();
   renderCarousel("newProducts", PRODUCTS.filter((p) => p.badge === "NOWOŚĆ" || p.id % 3 === 0).slice(0, 10));
   renderCarousel("bestsellers", [...PRODUCTS].sort((a, b) => b.reviews - a.reviews).slice(0, 10));
@@ -22,17 +23,31 @@ function renderRecent() {
 /* ---------- hero slider ---------- */
 let heroIndex = 0, heroTimer = null;
 
+/* produkty prezentowane na slajdach hero */
+const HERO_PRODUCTS = [1, 40, 24];
+
 function renderHero() {
   const hero = qs("#hero");
   hero.innerHTML = `
     <div class="hero-track" id="heroTrack">
-      ${HERO_SLIDES.map((s) => `
+      ${HERO_SLIDES.map((s, i) => {
+        const hp = getProduct(HERO_PRODUCTS[i]) || PRODUCTS[0];
+        return `
         <div class="hero-slide hero-theme-${s.theme}">
-          <p class="hero-kicker">GOL-STORE • sklep piłkarski</p>
-          <h2>${s.title}</h2>
-          <p>${s.subtitle}</p>
-          <a class="btn btn-primary" href="${s.link}">${s.cta}</a>
-        </div>`).join("")}
+          <span class="hero-orb hero-orb-1"></span>
+          <span class="hero-orb hero-orb-2"></span>
+          <div class="hero-content">
+            <p class="hero-kicker hero-anim">GOL-STORE • sklep piłkarski</p>
+            <h2 class="hero-anim">${s.title}</h2>
+            <p class="hero-sub hero-anim">${s.subtitle}</p>
+            <div class="hero-anim"><a class="btn btn-primary btn-hero" href="${s.link}">${s.cta} ${ICONS.chevron}</a></div>
+          </div>
+          <a class="hero-product hero-anim" href="produkt.html?id=${hp.id}" aria-label="${escapeHtml(hp.name)}">
+            <span class="hero-product-img">${productSVG(hp, "transparent")}</span>
+            <span class="hero-product-tag">${escapeHtml(hp.name)}<b>${zl(hp.price)}</b></span>
+          </a>
+        </div>`;
+      }).join("")}
     </div>
     <button class="hero-nav hero-prev" aria-label="Poprzedni slajd">${ICONS.chevron}</button>
     <button class="hero-nav hero-next" aria-label="Następny slajd">${ICONS.chevron}</button>
@@ -54,6 +69,29 @@ function heroGo(i) {
   heroIndex = (i + HERO_SLIDES.length) % HERO_SLIDES.length;
   qs("#heroTrack").style.transform = `translateX(-${heroIndex * 100}%)`;
   qsa("#heroDots button").forEach((d, idx) => d.classList.toggle("active", idx === heroIndex));
+  /* restart kinetycznej typografii na aktywnym slajdzie */
+  qsa(".hero-slide").forEach((slide, idx) => {
+    slide.classList.toggle("active", idx === heroIndex);
+    if (idx === heroIndex) {
+      qsa(".hero-anim", slide).forEach((el) => {
+        el.style.animation = "none";
+        void el.offsetWidth;
+        el.style.animation = "";
+      });
+    }
+  });
+}
+
+/* ---------- pasek liczników ---------- */
+function renderStats() {
+  const saleCount = PRODUCTS.filter((p) => p.oldPrice).length;
+  const maxDiscount = Math.max(...PRODUCTS.filter((p) => p.oldPrice)
+    .map((p) => Math.round((1 - p.price / p.oldPrice) * 100)));
+  qs("#statsStrip").innerHTML = `
+    <div class="stat"><b data-count="${PRODUCTS.length}">0</b><span>produktów w ofercie</span></div>
+    <div class="stat"><b data-count="${BRANDS.length}">0</b><span>topowych marek</span></div>
+    <div class="stat"><b data-count="${saleCount}">0</b><span>produktów w wyprzedaży</span></div>
+    <div class="stat"><b data-count="${maxDiscount}" data-suffix="%">0</b><span>maksymalny rabat</span></div>`;
 }
 
 function heroAutoplay() {

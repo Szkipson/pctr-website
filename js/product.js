@@ -74,16 +74,24 @@ function renderProduct(p) {
     { c1: p.img.c3, c2: p.img.c1, c3: p.img.c2 },
     { c1: p.img.c1, c2: p.img.c3, c3: p.img.c2 }
   ];
+  let currentVariant = 0;
 
   qs("#productMount").innerHTML = `
   <div class="product-page">
     <div class="gallery">
-      <div class="gallery-main" id="galleryMain">${productSVG(p)}</div>
+      <div class="gallery-main" id="galleryMain">
+        <div class="gallery-zoom" id="galleryZoom">${productSVG(p)}</div>
+        <span class="gallery-hint">${ICONS.search} Najedź, aby przybliżyć</span>
+      </div>
+      <p class="gallery-label">Wersje kolorystyczne i ujęcia:</p>
       <div class="gallery-thumbs">
         ${variants.map((v, i) => `
-          <button class="gallery-thumb ${i === 0 ? "active" : ""}" data-v="${i}">
+          <button class="gallery-thumb ${i === 0 ? "active" : ""}" data-v="${i}" aria-label="Wariant ${i + 1}">
             ${productSVG({ ...p, img: v })}
           </button>`).join("")}
+        <button class="gallery-thumb" data-v="alt" aria-label="Inne ujęcie">
+          ${productSVGAlt(p)}
+        </button>
       </div>
     </div>
 
@@ -174,12 +182,34 @@ function renderProduct(p) {
     </div>
   </div>`;
 
-  /* galeria */
+  /* galeria: przełączanie wariantów z cross-fade */
   qsa(".gallery-thumb").forEach((t) => t.addEventListener("click", () => {
     qsa(".gallery-thumb").forEach((x) => x.classList.remove("active"));
     t.classList.add("active");
-    qs("#galleryMain").innerHTML = productSVG({ ...p, img: variants[Number(t.dataset.v)] });
+    const zoomEl = qs("#galleryZoom");
+    zoomEl.classList.add("switching");
+    setTimeout(() => {
+      if (t.dataset.v === "alt") {
+        zoomEl.innerHTML = productSVGAlt({ ...p, img: variants[currentVariant] });
+      } else {
+        currentVariant = Number(t.dataset.v);
+        zoomEl.innerHTML = productSVG({ ...p, img: variants[currentVariant] });
+      }
+      zoomEl.classList.remove("switching");
+    }, 160);
   }));
+
+  /* galeria: zoom podążający za kursorem */
+  const galleryMain = qs("#galleryMain");
+  const zoomEl = qs("#galleryZoom");
+  galleryMain.addEventListener("mousemove", (e) => {
+    const r = galleryMain.getBoundingClientRect();
+    const x = ((e.clientX - r.left) / r.width) * 100;
+    const y = ((e.clientY - r.top) / r.height) * 100;
+    zoomEl.style.transformOrigin = `${x}% ${y}%`;
+  });
+  galleryMain.addEventListener("mouseenter", () => zoomEl.classList.add("zoomed"));
+  galleryMain.addEventListener("mouseleave", () => zoomEl.classList.remove("zoomed"));
 
   /* rozmiary — przy jednym dostępnym rozmiarze zaznacz go od razu */
   qsa(".size-btn").forEach((b) => b.addEventListener("click", () => {
@@ -215,8 +245,11 @@ function renderProduct(p) {
       }
       pers = { name, number };
     }
-    addToCart(p.id, selectedSize, 1, pers);
+    addToCart(p.id, selectedSize, 1, pers, qs("#galleryMain"));
   });
+
+  /* sticky pasek zakupu, gdy główny przycisk zniknie z ekranu */
+  initStickyBar(p);
 
   /* ulubione */
   qs("#ppWish").addEventListener("click", () => {
@@ -240,6 +273,37 @@ function renderProduct(p) {
     e.preventDefault();
     qs("#sizeModalBackdrop").classList.add("show");
   });
+}
+
+/* ---------- sticky pasek zakupu ---------- */
+function initStickyBar(p) {
+  const bar = document.createElement("div");
+  bar.className = "sticky-buy";
+  bar.innerHTML = `
+    <div class="container sticky-buy-inner">
+      <span class="sticky-buy-img">${productSVG(p)}</span>
+      <div class="sticky-buy-info">
+        <b>${escapeHtml(p.name)}</b>
+        <span>${selectedSize ? "Rozmiar: " + escapeHtml(selectedSize) : "Wybierz rozmiar powyżej"}</span>
+      </div>
+      <b class="sticky-buy-price">${zl(p.price)}</b>
+      <button class="btn btn-primary" id="stickyAddBtn">${ICONS.cart} Dodaj do koszyka</button>
+    </div>`;
+  document.body.appendChild(bar);
+
+  const infoSpan = qs(".sticky-buy-info span", bar);
+  qsa(".size-btn").forEach((b) => b.addEventListener("click", () => {
+    infoSpan.textContent = "Rozmiar: " + b.dataset.size;
+  }));
+  if (selectedSize) infoSpan.textContent = "Rozmiar: " + selectedSize;
+
+  qs("#stickyAddBtn", bar).addEventListener("click", () => qs("#addToCartBtn").click());
+
+  const mainBtn = qs("#addToCartBtn");
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach((e) => bar.classList.toggle("show", !e.isIntersecting && e.boundingClientRect.top < 0));
+  }, { threshold: 0 });
+  obs.observe(mainBtn);
 }
 
 /* ---------- produkty powiązane ---------- */

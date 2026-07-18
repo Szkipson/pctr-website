@@ -12,7 +12,8 @@ const state = {
   priceMax: null,
   onSale: getParam("cat") === "wyprzedaz",
   sort: getParam("sort") || "popular",
-  page: 1
+  page: 1,
+  collapsed: new Set()
 };
 
 window.pageInit = function () {
@@ -85,7 +86,8 @@ function renderListing() {
   renderFilters();
   renderActiveChips();
 
-  qs("#productGrid").innerHTML = pageItems.length
+  const grid = qs("#productGrid");
+  grid.innerHTML = pageItems.length
     ? pageItems.map(productCard).join("")
     : `<div class="no-results">
         ${ICONS.search}
@@ -93,7 +95,12 @@ function renderListing() {
         <p>Zmień filtry lub wyszukaj inną frazę.</p>
         <button class="btn btn-primary" onclick="clearFilters()">Wyczyść filtry</button>
       </div>`;
-  bindWishButtons(qs("#productGrid"));
+  /* kaskadowe wejście kart po każdej zmianie filtrów */
+  qsa(".product-card", grid).forEach((card, i) => {
+    card.classList.add("grid-in");
+    card.style.animationDelay = Math.min(i * 45, 400) + "ms";
+  });
+  bindWishButtons(grid);
 
   const pag = qs("#pagination");
   if (pages <= 1) pag.innerHTML = "";
@@ -122,6 +129,18 @@ function plural(n, one, few, many) {
 }
 
 /* ---------- panel filtrów ---------- */
+function filterGroup(name, inner) {
+  const collapsed = state.collapsed.has(name);
+  return `
+  <div class="filter-group ${collapsed ? "collapsed" : ""}">
+    <button class="fg-head" data-group="${name}" type="button" aria-expanded="${!collapsed}">
+      <h4>${name}</h4>
+      <span class="fg-arrow">${ICONS.chevron}</span>
+    </button>
+    <div class="fg-body"><div>${inner}</div></div>
+  </div>`;
+}
+
 function renderFilters() {
   const base = baseProducts();
   const brandCounts = {};
@@ -140,54 +159,52 @@ function renderFilters() {
       </div>
     </div>
 
-    ${cat && cat.subs.length ? `
-    <div class="filter-group">
-      <h4>Kategoria</h4>
+    ${cat && cat.subs.length ? filterGroup("Kategoria", `
       ${cat.subs.map((s) => `
         <label class="filter-option">
           <input type="radio" name="subcat" value="${s.id}" ${state.sub === s.id ? "checked" : ""}>
           ${s.name}
           <span class="cnt">${PRODUCTS.filter((p) => p.sub === s.id).length}</span>
         </label>`).join("")}
-      ${state.sub ? `<label class="filter-option"><input type="radio" name="subcat" value="">Wszystkie</label>` : ""}
-    </div>` : ""}
+      ${state.sub ? `<label class="filter-option"><input type="radio" name="subcat" value="">Wszystkie</label>` : ""}`) : ""}
 
-    <div class="filter-group">
-      <h4>Marka</h4>
-      ${Object.keys(brandCounts).sort().map((b) => `
-        <label class="filter-option">
-          <input type="checkbox" name="brand" value="${escapeHtml(b)}" ${state.brands.includes(b) ? "checked" : ""}>
-          ${escapeHtml(b)}
-          <span class="cnt">${brandCounts[b]}</span>
-        </label>`).join("") || `<p class="cnt">Brak marek</p>`}
-    </div>
+    ${filterGroup("Marka", Object.keys(brandCounts).sort().map((b) => `
+      <label class="filter-option">
+        <input type="checkbox" name="brand" value="${escapeHtml(b)}" ${state.brands.includes(b) ? "checked" : ""}>
+        ${escapeHtml(b)}
+        <span class="cnt">${brandCounts[b]}</span>
+      </label>`).join("") || `<p class="cnt">Brak marek</p>`)}
 
-    ${sizeSet.length > 1 ? `
-    <div class="filter-group">
-      <h4>Rozmiar</h4>
-      ${sizeSet.map((s) => `
-        <label class="filter-option">
-          <input type="checkbox" name="size" value="${escapeHtml(s)}" ${state.sizes.includes(s) ? "checked" : ""}>
-          ${escapeHtml(s)}
-        </label>`).join("")}
-    </div>` : ""}
+    ${sizeSet.length > 1 ? filterGroup("Rozmiar", sizeSet.map((s) => `
+      <label class="filter-option">
+        <input type="checkbox" name="size" value="${escapeHtml(s)}" ${state.sizes.includes(s) ? "checked" : ""}>
+        ${escapeHtml(s)}
+      </label>`).join("")) : ""}
 
-    <div class="filter-group">
-      <h4>Cena</h4>
+    ${filterGroup("Cena", `
       <div class="price-inputs">
         <input type="number" id="priceMin" placeholder="od" min="0" value="${state.priceMin ?? ""}">
         <span>–</span>
         <input type="number" id="priceMax" placeholder="do" min="0" value="${state.priceMax ?? ""}">
         <button class="btn btn-sm btn-dark" id="priceApply">OK</button>
-      </div>
-    </div>
+      </div>`)}
 
     <div class="filter-group">
-      <label class="filter-option">
-        <input type="checkbox" id="onSale" ${state.onSale ? "checked" : ""} ${state.cat === "wyprzedaz" ? "disabled" : ""}>
-        Tylko przecenione
-      </label>
+      <div class="fg-body"><div>
+        <label class="filter-option">
+          <input type="checkbox" id="onSale" ${state.onSale ? "checked" : ""} ${state.cat === "wyprzedaz" ? "disabled" : ""}>
+          Tylko przecenione
+        </label>
+      </div></div>
     </div>`;
+
+  /* zwijanie grup z animacją */
+  qsa(".fg-head", qs("#filters")).forEach((h) => h.addEventListener("click", () => {
+    const name = h.dataset.group;
+    if (state.collapsed.has(name)) state.collapsed.delete(name);
+    else state.collapsed.add(name);
+    h.closest(".filter-group").classList.toggle("collapsed", state.collapsed.has(name));
+  }));
 
   qsa('input[name="brand"]').forEach((i) => i.addEventListener("change", () => {
     state.brands = qsa('input[name="brand"]:checked').map((x) => x.value);
