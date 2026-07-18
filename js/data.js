@@ -350,5 +350,6 @@ const HERO_SLIDES = [
 ];
 
 const FREE_SHIPPING_FROM = 300;
+const PERS_PRICE = 24.99; /* nadruk nazwiska i numeru */
 const SHIPPING_COST = 12.99;
 const PROMO_CODES = { "GOL10": 0.10, "START15": 0.15 };

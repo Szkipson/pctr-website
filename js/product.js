@@ -25,8 +25,29 @@ window.pageInit = function () {
     return;
   }
   renderProduct(p);
+  rememberViewed(p.id);
   renderRelated(p);
+  renderRecentlyViewed(p.id);
 };
+
+/* ---------- ostatnio oglądane ---------- */
+function rememberViewed(id) {
+  let viewed = store.read("golstore_viewed", []).filter((x) => x !== id);
+  viewed.unshift(id);
+  store.write("golstore_viewed", viewed.slice(0, 8));
+}
+
+function renderRecentlyViewed(currentId) {
+  const viewed = store.read("golstore_viewed", [])
+    .filter((x) => x !== currentId).map(getProduct).filter(Boolean);
+  const section = qs("#recentSection");
+  if (!section || !viewed.length) return;
+  section.hidden = false;
+  const wrap = qs("#recentCarousel");
+  wrap.innerHTML = `
+    <div class="carousel-track">${viewed.map(productCard).join("")}</div>`;
+  bindWishButtons(wrap);
+}
 
 function starsHtml(rating) {
   return Array.from({ length: 5 }, (_, i) =>
@@ -91,6 +112,19 @@ function renderProduct(p) {
       </div>
       <p class="size-error" id="sizeError"></p>
 
+      ${p.sub === "koszulki" ? `
+      <div class="pers-box" id="persBox">
+        <label class="filter-option pers-toggle">
+          <input type="checkbox" id="persToggle">
+          <b>Dodaj nadruk nazwiska i numeru</b>
+          <span class="cnt">+${zl(PERS_PRICE)}</span>
+        </label>
+        <div class="pers-fields" id="persFields" hidden>
+          <input id="persName" maxlength="14" placeholder="NAZWISKO" aria-label="Nazwisko na koszulce">
+          <input id="persNumber" maxlength="2" inputmode="numeric" pattern="[0-9]*" placeholder="Nr" aria-label="Numer na koszulce">
+        </div>
+      </div>` : ""}
+
       <div class="pp-actions">
         <button class="btn btn-primary" id="addToCartBtn">${ICONS.cart} Dodaj do koszyka</button>
         <button class="pp-wish ${inWish ? "active" : ""}" id="ppWish" aria-label="Dodaj do ulubionych">${ICONS.heart}</button>
@@ -147,13 +181,22 @@ function renderProduct(p) {
     qs("#galleryMain").innerHTML = productSVG({ ...p, img: variants[Number(t.dataset.v)] });
   }));
 
-  /* rozmiary */
+  /* rozmiary — przy jednym dostępnym rozmiarze zaznacz go od razu */
   qsa(".size-btn").forEach((b) => b.addEventListener("click", () => {
     qsa(".size-btn").forEach((x) => x.classList.remove("active"));
     b.classList.add("active");
     selectedSize = b.dataset.size;
     qs("#sizeError").textContent = "";
   }));
+  if (p.sizes.length === 1) {
+    selectedSize = p.sizes[0];
+    qs(".size-btn").classList.add("active");
+  }
+
+  /* personalizacja (koszulki) */
+  qs("#persToggle")?.addEventListener("change", (e) => {
+    qs("#persFields").hidden = !e.target.checked;
+  });
 
   /* koszyk */
   qs("#addToCartBtn").addEventListener("click", () => {
@@ -162,7 +205,17 @@ function renderProduct(p) {
       qs("#sizeGrid").scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
-    addToCart(p.id, selectedSize, 1);
+    let pers = null;
+    if (qs("#persToggle")?.checked) {
+      const name = qs("#persName").value.trim().toUpperCase();
+      const number = qs("#persNumber").value.trim();
+      if (!name && !number) {
+        toast("Uzupełnij nazwisko lub numer nadruku");
+        return;
+      }
+      pers = { name, number };
+    }
+    addToCart(p.id, selectedSize, 1, pers);
   });
 
   /* ulubione */
@@ -185,7 +238,7 @@ function renderProduct(p) {
   });
   qs("#sizeTableLink").addEventListener("click", (e) => {
     e.preventDefault();
-    toast("Tabela rozmiarów dostępna w opisie kategorii (demo)");
+    qs("#sizeModalBackdrop").classList.add("show");
   });
 }
 

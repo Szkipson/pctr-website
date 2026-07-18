@@ -13,46 +13,75 @@ const escapeHtml = (s) => String(s).replace(/[&<>"']/g, (m) =>
 
 function getProduct(id) { return PRODUCTS.find((p) => p.id === Number(id)); }
 
-/* ---------- stan: koszyk + ulubione (localStorage) ---------- */
-const store = {
-  read(key, fallback) {
-    try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
-    catch { return fallback; }
-  },
-  write(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
-};
+/* ---------- stan: koszyk + ulubione ----------
+   localStorage z awaryjnym magazynem w pamięci — sklep działa
+   nawet przy zablokowanych ciasteczkach/localStorage. */
+const store = (() => {
+  const mem = {};
+  let ls = null;
+  try {
+    ls = window.localStorage;
+    ls.setItem("__golstore_test", "1");
+    ls.removeItem("__golstore_test");
+  } catch { ls = null; }
+  return {
+    read(key, fallback) {
+      try {
+        const raw = ls ? ls.getItem(key) : (key in mem ? mem[key] : null);
+        const val = JSON.parse(raw);
+        return val ?? fallback;
+      } catch { return fallback; }
+    },
+    write(key, val) {
+      const raw = JSON.stringify(val);
+      mem[key] = raw;
+      try { if (ls) ls.setItem(key, raw); } catch { /* pamięć wystarczy */ }
+    }
+  };
+})();
 
 function getCart() { return store.read("golstore_cart", []); }
 function setCart(cart) { store.write("golstore_cart", cart); updateHeaderCounts(); renderCartDrawer(); }
 function cartCount() { return getCart().reduce((s, i) => s + i.qty, 0); }
+
+/* klucz pozycji: produkt + rozmiar + ewentualna personalizacja */
+function lineKey(i) {
+  return i.id + "|" + i.size + "|" + (i.pers ? i.pers.name + "#" + i.pers.number : "");
+}
+function itemUnitPrice(i) {
+  const p = getProduct(i.id);
+  if (!p) return 0;
+  return p.price + (i.pers ? PERS_PRICE : 0);
+}
 function cartTotal() {
-  return getCart().reduce((s, i) => {
-    const p = getProduct(i.id);
-    return p ? s + p.price * i.qty : s;
-  }, 0);
+  return getCart().reduce((s, i) => s + itemUnitPrice(i) * i.qty, 0);
+}
+function persLabel(i) {
+  return i.pers ? `Nadruk: ${i.pers.name || "—"} ${i.pers.number || ""}`.trim() : "";
 }
 
-function addToCart(id, size, qty) {
+function addToCart(id, size, qty, pers) {
   const cart = getCart();
-  const found = cart.find((i) => i.id === id && i.size === size);
-  if (found) found.qty += qty || 1;
-  else cart.push({ id, size, qty: qty || 1 });
+  const item = { id, size, qty: qty || 1, pers: pers || null };
+  const found = cart.find((i) => lineKey(i) === lineKey(item));
+  if (found) found.qty += item.qty;
+  else cart.push(item);
   setCart(cart);
   const p = getProduct(id);
-  toast(`Dodano do koszyka: ${p ? p.name : ""} (rozm. ${size})`, "cart");
+  toast(`Dodano do koszyka: ${p ? p.name : ""} (rozm. ${size})`);
   openCartDrawer();
 }
 
-function removeFromCart(id, size) {
-  setCart(getCart().filter((i) => !(i.id === id && i.size === size)));
+function removeFromCart(key) {
+  setCart(getCart().filter((i) => lineKey(i) !== key));
 }
 
-function changeQty(id, size, delta) {
+function changeQty(key, delta) {
   const cart = getCart();
-  const item = cart.find((i) => i.id === id && i.size === size);
+  const item = cart.find((i) => lineKey(i) === key);
   if (!item) return;
   item.qty += delta;
-  if (item.qty <= 0) return removeFromCart(id, size);
+  if (item.qty <= 0) return removeFromCart(key);
   setCart(cart);
 }
 
@@ -146,6 +175,7 @@ function renderHeader() {
               </div>
             </div>` : ""}
           </div>`).join("")}
+        <div class="nav-item"><a href="blog.html">Strefa wiedzy</a></div>
       </div>
     </nav>
   </header>
@@ -172,8 +202,23 @@ function renderHeader() {
           <summary><a href="kategoria.html?cat=${c.id}">${c.name}</a></summary>
           ${c.subs.map((s) => `<a class="mob-sub" href="kategoria.html?cat=${c.id}&sub=${s.id}">${s.name}</a>`).join("")}
         </details>`).join("")}
+      <details class="no-subs"><summary><a href="blog.html">Strefa wiedzy</a></summary></details>
     </div>
   </aside>
+
+  <div class="modal-backdrop" id="sizeModalBackdrop">
+    <div class="modal modal-wide" role="dialog" aria-label="Tabela rozmiarów">
+      <button class="icon-btn modal-close" id="sizeModalClose" aria-label="Zamknij">${ICONS.close}</button>
+      <h3>Tabela rozmiarów</h3>
+      <p class="modal-sub">Orientacyjne przeliczenie rozmiarów obuwia (EU / długość wkładki).</p>
+      <table class="spec-table">
+        <tr><td><b>EU</b></td><td>39</td><td>40</td><td>41</td><td>42</td><td>43</td><td>44</td><td>45</td><td>46</td></tr>
+        <tr><td><b>Wkładka (cm)</b></td><td>24,5</td><td>25</td><td>25,5</td><td>26,5</td><td>27</td><td>28</td><td>28,5</td><td>29,5</td></tr>
+      </table>
+      <p class="modal-sub" style="margin-top:14px">Odzież: S (168–176 cm), M (174–182 cm), L (180–188 cm),
+      XL (186–192 cm), XXL (190–198 cm). Rękawice: zmierz obwód dłoni bez kciuka w cm — wynik ≈ rozmiar.</p>
+    </div>
+  </div>
 
   <div class="modal-backdrop" id="accountModalBackdrop">
     <div class="modal" role="dialog" aria-label="Logowanie">
@@ -227,21 +272,22 @@ function renderCartDrawer() {
   body.innerHTML = cart.map((i) => {
     const p = getProduct(i.id);
     if (!p) return "";
+    const key = escapeHtml(lineKey(i));
     return `
     <div class="cart-row">
       <a href="produkt.html?id=${p.id}" class="cart-row-img">${productSVG(p)}</a>
       <div class="cart-row-info">
         <a href="produkt.html?id=${p.id}" class="cart-row-name">${escapeHtml(p.name)}</a>
-        <span class="cart-row-meta">Rozmiar: ${escapeHtml(i.size)}</span>
+        <span class="cart-row-meta">Rozmiar: ${escapeHtml(i.size)}${i.pers ? " • " + escapeHtml(persLabel(i)) : ""}</span>
         <div class="qty-ctrl">
-          <button data-act="minus" data-id="${p.id}" data-size="${escapeHtml(i.size)}" aria-label="Zmniejsz">−</button>
+          <button data-act="minus" data-key="${key}" aria-label="Zmniejsz">−</button>
           <span>${i.qty}</span>
-          <button data-act="plus" data-id="${p.id}" data-size="${escapeHtml(i.size)}" aria-label="Zwiększ">+</button>
+          <button data-act="plus" data-key="${key}" aria-label="Zwiększ">+</button>
         </div>
       </div>
       <div class="cart-row-right">
-        <span class="cart-row-price">${zl(p.price * i.qty)}</span>
-        <button class="icon-btn cart-row-del" data-act="del" data-id="${p.id}" data-size="${escapeHtml(i.size)}" aria-label="Usuń">${ICONS.trash}</button>
+        <span class="cart-row-price">${zl(itemUnitPrice(i) * i.qty)}</span>
+        <button class="icon-btn cart-row-del" data-act="del" data-key="${key}" aria-label="Usuń">${ICONS.trash}</button>
       </div>
     </div>`;
   }).join("");
@@ -261,9 +307,9 @@ function renderCartDrawer() {
     <a class="btn btn-dark btn-block" href="zamowienie.html">Do kasy</a>`;
 
   qsa("[data-act]", body).forEach((btn) => btn.addEventListener("click", () => {
-    const { act, id, size } = btn.dataset;
-    if (act === "del") removeFromCart(Number(id), size);
-    else changeQty(Number(id), size, act === "plus" ? 1 : -1);
+    const { act, key } = btn.dataset;
+    if (act === "del") removeFromCart(key);
+    else changeQty(key, act === "plus" ? 1 : -1);
     if (typeof window.onCartChanged === "function") window.onCartChanged();
   }));
 }
@@ -328,8 +374,12 @@ function initHeaderEvents() {
     toast("Rejestracja dostępna w wersji demo po zalogowaniu");
   });
 
+  const sizeModal = qs("#sizeModalBackdrop");
+  qs("#sizeModalClose")?.addEventListener("click", () => sizeModal.classList.remove("show"));
+  sizeModal?.addEventListener("click", (e) => { if (e.target === sizeModal) sizeModal.classList.remove("show"); });
+
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") { closeDrawers(); modal?.classList.remove("show"); }
+    if (e.key === "Escape") { closeDrawers(); modal?.classList.remove("show"); sizeModal?.classList.remove("show"); }
   });
 
   initSearch();
@@ -378,6 +428,7 @@ function renderFooter() {
       </div>
       <div class="footer-col">
         <h4>Informacje</h4>
+        <a href="blog.html">Strefa wiedzy</a>
         <a href="#">O sklepie</a><a href="#">Regulamin</a><a href="#">Polityka prywatności</a>
         <a href="#">Program lojalnościowy</a><a href="#">Współpraca B2B</a>
       </div>
@@ -421,7 +472,15 @@ function productCard(p) {
   <article class="product-card">
     ${p.badge ? `<span class="p-badge ${/^-/.test(p.badge) ? "p-badge-sale" : ""}">${p.badge}</span>` : ""}
     <button class="wish-btn ${inWish ? "active" : ""}" data-id="${p.id}" aria-label="Dodaj do ulubionych">${ICONS.heart}</button>
-    <a href="produkt.html?id=${p.id}" class="p-img">${productSVG(p)}</a>
+    <a href="produkt.html?id=${p.id}" class="p-img">
+      ${productSVG(p)}
+      <span class="quick-add" aria-hidden="true">
+        <span class="qa-label">${ICONS.cart} Szybki zakup — wybierz rozmiar:</span>
+        <span class="qa-sizes">
+          ${p.sizes.map((s) => `<button class="qa-size" data-id="${p.id}" data-size="${escapeHtml(s)}">${escapeHtml(s)}</button>`).join("")}
+        </span>
+      </span>
+    </a>
     <div class="p-info">
       <span class="p-brand">${escapeHtml(p.brand)}</span>
       <a href="produkt.html?id=${p.id}" class="p-name">${escapeHtml(p.name)}</a>
@@ -442,6 +501,15 @@ function bindWishButtons(scope) {
       e.preventDefault();
       toggleWishlist(Number(b.dataset.id));
       if (typeof window.onWishChanged === "function") window.onWishChanged();
+    });
+  });
+  /* szybkie dodanie do koszyka z kafelka (rozmiar na hover) */
+  qsa(".qa-size", scope).forEach((b) => {
+    b.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      addToCart(Number(b.dataset.id), b.dataset.size, 1);
+      if (typeof window.onCartChanged === "function") window.onCartChanged();
     });
   });
 }

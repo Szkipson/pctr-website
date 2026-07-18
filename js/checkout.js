@@ -87,8 +87,8 @@ function renderCheckout() {
           return `
           <div class="mini-row">
             <span class="img">${productSVG(p)}</span>
-            <span class="nm">${escapeHtml(p.name)}<br><small>rozm. ${escapeHtml(i.size)} × ${i.qty}</small></span>
-            <b>${zl(p.price * i.qty)}</b>
+            <span class="nm">${escapeHtml(p.name)}<br><small>rozm. ${escapeHtml(i.size)} × ${i.qty}${i.pers ? " • " + escapeHtml(persLabel(i)) : ""}</small></span>
+            <b>${zl(itemUnitPrice(i) * i.qty)}</b>
           </div>`;
         }).join("")}
       </div>

@@ -39,20 +39,21 @@ function renderCartPage() {
       ${cart.map((i) => {
         const p = getProduct(i.id);
         if (!p) return "";
+        const key = escapeHtml(lineKey(i));
         return `
         <div class="cart-line">
           <a class="cart-line-img" href="produkt.html?id=${p.id}">${productSVG(p)}</a>
           <div>
             <a class="cart-line-name" href="produkt.html?id=${p.id}">${escapeHtml(p.name)}</a>
-            <p class="cart-line-meta">${escapeHtml(p.brand)} • Rozmiar: ${escapeHtml(i.size)} • ${zl(p.price)}/szt.</p>
+            <p class="cart-line-meta">${escapeHtml(p.brand)} • Rozmiar: ${escapeHtml(i.size)} • ${zl(itemUnitPrice(i))}/szt.${i.pers ? "<br>" + escapeHtml(persLabel(i)) + " (+" + zl(PERS_PRICE) + ")" : ""}</p>
           </div>
           <div class="qty-ctrl">
-            <button data-act="minus" data-id="${p.id}" data-size="${escapeHtml(i.size)}" aria-label="Zmniejsz">−</button>
+            <button data-act="minus" data-key="${key}" aria-label="Zmniejsz">−</button>
             <span>${i.qty}</span>
-            <button data-act="plus" data-id="${p.id}" data-size="${escapeHtml(i.size)}" aria-label="Zwiększ">+</button>
+            <button data-act="plus" data-key="${key}" aria-label="Zwiększ">+</button>
           </div>
-          <span class="cart-line-price">${zl(p.price * i.qty)}</span>
-          <button class="icon-btn cart-line-del" data-act="del" data-id="${p.id}" data-size="${escapeHtml(i.size)}" aria-label="Usuń">${ICONS.trash}</button>
+          <span class="cart-line-price">${zl(itemUnitPrice(i) * i.qty)}</span>
+          <button class="icon-btn cart-line-del" data-act="del" data-key="${key}" aria-label="Usuń">${ICONS.trash}</button>
         </div>`;
       }).join("")}
     </div>
@@ -80,9 +81,9 @@ function renderCartPage() {
   </div>`;
 
   qsa("[data-act]", mount).forEach((btn) => btn.addEventListener("click", () => {
-    const { act, id, size } = btn.dataset;
-    if (act === "del") removeFromCart(Number(id), size);
-    else changeQty(Number(id), size, act === "plus" ? 1 : -1);
+    const { act, key } = btn.dataset;
+    if (act === "del") removeFromCart(key);
+    else changeQty(key, act === "plus" ? 1 : -1);
     renderCartPage();
   }));
 

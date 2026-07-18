@@ -8,7 +8,16 @@ window.pageInit = function () {
   renderCarousel("saleProducts", PRODUCTS.filter((p) => p.oldPrice).sort((a, b) =>
     (1 - b.price / b.oldPrice) - (1 - a.price / a.oldPrice)).slice(0, 10));
   renderBrands();
+  renderRecent();
 };
+
+/* ---------- ostatnio oglądane ---------- */
+function renderRecent() {
+  const viewed = store.read("golstore_viewed", []).map(getProduct).filter(Boolean);
+  if (!viewed.length) return;
+  qs("#recentSection").hidden = false;
+  renderCarousel("recentCarousel", viewed);
+}
 
 /* ---------- hero slider ---------- */
 let heroIndex = 0, heroTimer = null;
